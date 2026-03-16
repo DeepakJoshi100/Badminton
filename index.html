@@ -1,0 +1,2849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏸 Hathikhal Badminton League</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 25px 50px rgba(0, 0, 0, 0.25);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gradient);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 5px solid var(--light);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 18px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Firebase Status */
+        .firebase-status {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .firebase-status.connected {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .firebase-status.disconnected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .firebase-status .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .firebase-status.connected .dot {
+            background: #10b981;
+            animation: pulse-dot 2s infinite;
+        }
+
+        .firebase-status.disconnected .dot {
+            background: #ef4444;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ==================== LOGIN PAGE ==================== */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: var(--gradient);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container::before {
+            content: '🏸';
+            position: absolute;
+            font-size: 300px;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(10deg); }
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 50px 40px;
+            border-radius: 30px;
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            z-index: 10;
+            animation: slideUp 0.8s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-logo .icon {
+            font-size: 80px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .login-logo h1 {
+            font-size: 26px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-top: 15px;
+            font-weight: 800;
+        }
+
+        .login-logo p {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .login-tabs {
+            display: flex;
+            margin-bottom: 25px;
+            background: var(--light);
+            border-radius: 15px;
+            padding: 5px;
+        }
+
+        .login-tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 12px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .login-tab.active {
+            background: var(--gradient);
+            color: white;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 18px 18px 18px 50px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--gradient);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-btn.viewer {
+            background: var(--gradient-success);
+            margin-top: 15px;
+        }
+
+        .error-msg {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .admin-form, .viewer-form {
+            display: none;
+        }
+
+        .admin-form.active, .viewer-form.active {
+            display: block;
+        }
+
+        .viewer-info {
+            background: #f0fdf4;
+            border: 2px solid var(--success);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .viewer-info h3 {
+            color: var(--success);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .viewer-info ul {
+            list-style: none;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .viewer-info ul li {
+            padding: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ==================== MAIN APP ==================== */
+        .app-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        /* Role Badge */
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .role-badge.admin {
+            background: var(--gradient-danger);
+            color: white;
+        }
+
+        .role-badge.viewer {
+            background: var(--gradient-success);
+            color: white;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 22px;
+            font-weight: 800;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-logo span {
+            font-size: 28px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--light);
+            border: none;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .nav-item.active {
+            background: var(--gradient);
+            color: white;
+        }
+
+        .nav-item.logout {
+            background: var(--danger);
+            color: white;
+        }
+
+        .nav-item.logout:hover {
+            background: #dc2626;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .hamburger span {
+            width: 28px;
+            height: 3px;
+            background: var(--primary);
+            margin: 3px 0;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+
+        /* ADMIN ONLY - Hidden by default */
+        .admin-only {
+            display: none !important;
+        }
+
+        body.is-admin .admin-only {
+            display: flex !important;
+        }
+
+        body.is-admin .admin-only-block {
+            display: block !important;
+        }
+
+        body.is-admin .admin-only-inline {
+            display: inline-flex !important;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 100px 20px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            color: white;
+            font-size: 32px;
+            font-weight: 800;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* View Mode Banner */
+        .view-mode-banner {
+            display: none;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 12px 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+
+        body:not(.is-admin) .view-mode-banner {
+            display: block;
+        }
+
+        body.is-admin .view-mode-banner {
+            display: none;
+        }
+
+        /* ==================== STATS ==================== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+        }
+
+        .stat-card.purple::before { background: var(--primary); }
+        .stat-card.green::before { background: var(--success); }
+        .stat-card.blue::before { background: var(--info); }
+        .stat-card.orange::before { background: var(--warning); }
+        .stat-card.red::before { background: var(--danger); }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .stat-card.purple .stat-icon { background: rgba(102, 126, 234, 0.15); }
+        .stat-card.green .stat-icon { background: rgba(16, 185, 129, 0.15); }
+        .stat-card.blue .stat-icon { background: rgba(59, 130, 246, 0.15); }
+        .stat-card.orange .stat-icon { background: rgba(245, 158, 11, 0.15); }
+        .stat-card.red .stat-icon { background: rgba(239, 68, 68, 0.15); }
+
+        .stat-info h3 {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--dark);
+        }
+
+        /* ==================== BUTTONS ==================== */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary { background: var(--gradient); color: white; }
+        .btn-success { background: var(--gradient-success); color: white; }
+        .btn-danger { background: var(--gradient-danger); color: white; }
+        .btn-warning { background: var(--gradient-warning); color: white; }
+        .btn-secondary { background: var(--light); color: var(--dark); }
+        .btn-white { background: white; color: var(--primary); box-shadow: var(--shadow); }
+        .btn-sm { padding: 8px 16px; font-size: 12px; }
+
+        /* ==================== SHARED EXPENSES ==================== */
+        .expense-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .expense-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border-left: 5px solid var(--warning);
+        }
+
+        .expense-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .expense-info h3 {
+            font-size: 18px;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .expense-info p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .expense-amount {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--warning);
+        }
+
+        .expense-stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .expense-stat {
+            text-align: center;
+        }
+
+        .expense-stat .number {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .expense-stat .label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .expense-stat.paid .number { color: var(--success); }
+        .expense-stat.unpaid .number { color: var(--danger); }
+
+        /* ==================== MEMBERS ==================== */
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 16px 16px 16px 50px;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            box-shadow: var(--shadow);
+            font-family: inherit;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2), var(--shadow);
+        }
+
+        .members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 20px;
+        }
+
+        .member-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+        }
+
+        .member-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .member-header {
+            background: var(--gradient);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .member-avatar {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .member-name {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .member-phone {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .member-status {
+            margin-left: auto;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .member-status.active {
+            background: rgba(16, 185, 129, 0.3);
+        }
+
+        .member-status.inactive {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .member-body {
+            padding: 20px;
+        }
+
+        .member-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .member-stat {
+            text-align: center;
+            padding: 12px;
+            background: var(--light);
+            border-radius: 12px;
+        }
+
+        .member-stat .value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .member-stat .label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .member-stat.success .value { color: var(--success); }
+        .member-stat.danger .value { color: var(--danger); }
+
+        /* Pending Payments */
+        .pending-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px dashed #eee;
+        }
+
+        .pending-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--danger);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pending-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .pending-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #fef2f2;
+            border-radius: 10px;
+            border-left: 4px solid var(--danger);
+        }
+
+        .pending-item-info {
+            flex: 1;
+        }
+
+        .pending-item-info .name {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .pending-item-info .date {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .pending-item-amount {
+            font-weight: 700;
+            color: var(--danger);
+            font-size: 16px;
+        }
+
+        .pending-item-actions {
+            margin-left: 10px;
+        }
+
+        /* Payment History */
+        .payment-history {
+            margin-top: 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .payment-history.show {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .payment-history-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 15px 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+        }
+
+        .payment-history-title:hover {
+            background: rgba(102, 126, 234, 0.15);
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px 0;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f0fdf4;
+            border-radius: 10px;
+            border-left: 4px solid var(--success);
+        }
+
+        .history-item-info .name {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .history-item-info .date {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .history-item-info .method {
+            font-size: 11px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .history-item-amount {
+            font-weight: 700;
+            color: var(--success);
+            font-size: 16px;
+        }
+
+        .member-actions {
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .member-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .all-clear {
+            text-align: center;
+            padding: 20px;
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        /* ==================== MODALS ==================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 25px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+        }
+
+        .modal-header {
+            background: var(--gradient);
+            color: white;
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+            justify-content: center;
+            padding: 14px;
+        }
+
+        /* ==================== RULES ==================== */
+        .language-switch {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .lang-btn {
+            padding: 12px 30px;
+            background: white;
+            border: 2px solid white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lang-btn.active {
+            background: var(--gradient);
+            color: white;
+            border-color: transparent;
+        }
+
+        .rules-grid {
+            display: grid;
+            gap: 25px;
+        }
+
+        .rule-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .rule-card-header {
+            background: var(--gradient);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .rule-card-header .icon {
+            font-size: 32px;
+        }
+
+        .rule-card-header h3 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .rule-card-body {
+            padding: 25px;
+        }
+
+        .rule-list {
+            list-style: none;
+        }
+
+        .rule-list li {
+            padding: 12px 15px;
+            margin: 8px 0;
+            background: var(--light);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            font-size: 14px;
+            color: var(--dark);
+        }
+
+        .rule-list li:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(10px);
+        }
+
+        /* ==================== INACTIVITY TIMER ==================== */
+        .inactivity-timer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 12px 18px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: none;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 999;
+        }
+
+        body.is-admin .inactivity-timer {
+            display: flex;
+        }
+
+        .inactivity-timer.warning {
+            background: var(--danger);
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* ==================== TOAST ==================== */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--dark);
+            color: white;
+            padding: 16px 30px;
+            border-radius: 12px;
+            font-weight: 500;
+            z-index: 3000;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+        .toast.warning { background: var(--warning); }
+
+        /* ==================== EMPTY STATE ==================== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        /* Hide Pages */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 70px);
+                background: white;
+                flex-direction: column;
+                padding: 20px;
+                transition: left 0.3s;
+                overflow-y: auto;
+            }
+
+            .nav-menu.active { left: 0; }
+
+            .nav-item {
+                width: 100%;
+                justify-content: center;
+                padding: 15px;
+            }
+
+            .hamburger { display: flex; }
+
+            .hamburger.active span:nth-child(1) {
+                transform: rotate(45deg) translate(5px, 6px);
+            }
+
+            .hamburger.active span:nth-child(2) { opacity: 0; }
+
+            .hamburger.active span:nth-child(3) {
+                transform: rotate(-45deg) translate(5px, -6px);
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+
+            .page-title { font-size: 26px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .members-grid { grid-template-columns: 1fr; }
+            .member-stats { grid-template-columns: repeat(3, 1fr); }
+
+            .nav-left {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .role-badge {
+                font-size: 10px;
+                padding: 4px 10px;
+            }
+
+            .inactivity-timer {
+                bottom: 60px;
+                right: 10px;
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+
+            .language-switch { flex-direction: column; }
+            .lang-btn { justify-content: center; }
+
+            .expense-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .expense-stats { justify-content: center; }
+            .view-mode-banner { padding: 10px 15px; font-size: 12px; }
+            .firebase-status { top: auto; bottom: 50px; left: 10px; font-size: 10px; }
+        }
+
+        @media (max-width: 480px) {
+            .login-card { padding: 30px 20px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .stat-card { padding: 18px; }
+            .stat-value { font-size: 24px; }
+            .member-stats { grid-template-columns: 1fr; }
+            .modal-body { padding: 20px; }
+
+            .pending-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .pending-item-actions {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .pending-item-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .history-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+        <div class="loading-text">Connecting to Firebase... 🔥</div>
+    </div>
+
+    <!-- Firebase Status -->
+    <div class="firebase-status disconnected" id="firebaseStatus">
+        <span class="dot"></span>
+        <span id="firebaseStatusText">Connecting...</span>
+    </div>
+
+    <!-- ==================== LOGIN PAGE ==================== -->
+    <div class="login-container" id="loginPage">
+        <div class="login-card">
+            <div class="login-logo">
+                <div class="icon">🏸</div>
+                <h1>Hathikhal Badminton League</h1>
+                <p>Welcome, Champion! 🏆</p>
+            </div>
+
+            <div class="login-tabs">
+                <button class="login-tab active" onclick="switchLoginTab('admin')">🔐 Admin Login</button>
+                <button class="login-tab" onclick="switchLoginTab('viewer')">👁️ View Only</button>
+            </div>
+
+            <div id="loginError" class="error-msg" style="display: none;"></div>
+
+            <!-- Admin Login Form -->
+            <form id="adminLoginForm" class="admin-form active">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="adminUsername" placeholder="Admin Username" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="adminPassword" placeholder="Admin Password" required>
+                </div>
+                <button type="submit" class="login-btn" id="adminLoginBtn">
+                    Login as Admin <i class="fas fa-shield-alt"></i>
+                </button>
+            </form>
+
+            <!-- Viewer Form -->
+            <div id="viewerLoginForm" class="viewer-form">
+                <div class="viewer-info">
+                    <h3><i class="fas fa-eye"></i> View Only Mode</h3>
+                    <ul>
+                        <li>✅ View all members & payments</li>
+                        <li>✅ View shared expenses</li>
+                        <li>✅ Read rules & techniques</li>
+                        <li>❌ Cannot add/edit/delete anything</li>
+                    </ul>
+                </div>
+                <button type="button" class="login-btn viewer" onclick="loginAsViewer()">
+                    Continue as Viewer <i class="fas fa-eye"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN APP ==================== -->
+    <div class="app-container" id="appContainer">
+        
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="nav-content">
+                <div class="nav-left">
+                    <div class="nav-logo">
+                        <span>🏸</span>
+                        Hathikhal League
+                    </div>
+                    <span class="role-badge admin" id="roleBadge">🔐 Admin</span>
+                </div>
+                <div class="nav-menu" id="navMenu">
+                    <button class="nav-item active" data-page="dashboard">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button class="nav-item" data-page="members">
+                        <i class="fas fa-users"></i>
+                        <span>Members</span>
+                    </button>
+                    <button class="nav-item" data-page="expenses">
+                        <i class="fas fa-receipt"></i>
+                        <span>Expenses</span>
+                    </button>
+                    <button class="nav-item" data-page="rules">
+                        <i class="fas fa-book"></i>
+                        <span>Rules</span>
+                    </button>
+                    <button class="nav-item logout" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </div>
+                <div class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Dashboard Page -->
+            <div class="page active" id="dashboardPage">
+                <h1 class="page-title">📊 Dashboard</h1>
+                <div class="stats-grid" id="statsGrid"></div>
+                
+                <div class="card">
+                    <h2 style="margin-bottom: 20px; color: var(--dark); display: flex; align-items: center; gap: 10px;">
+                        <span>⏳</span> Pending Collections
+                    </h2>
+                    <div id="pendingCollections"></div>
+                </div>
+
+                <div class="card">
+                    <h2 style="margin-bottom: 20px; color: var(--dark); display: flex; align-items: center; gap: 10px;">
+                        <span>🔥</span> Recent Payments
+                    </h2>
+                    <div id="recentActivity"></div>
+                </div>
+            </div>
+
+            <!-- Members Page -->
+            <div class="page" id="membersPage">
+                <div class="page-header">
+                    <h1 class="page-title">👥 Members & Payments</h1>
+                    <button class="btn btn-white admin-only" id="addMemberBtn">
+                        <i class="fas fa-plus"></i> Add Member
+                    </button>
+                </div>
+                
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="memberSearch" placeholder="Search members by name or phone...">
+                </div>
+
+                <div class="members-grid" id="membersGrid"></div>
+            </div>
+
+            <!-- Expenses Page -->
+            <div class="page" id="expensesPage">
+                <div class="page-header">
+                    <h1 class="page-title">💸 Shared Expenses</h1>
+                    <button class="btn btn-white admin-only" id="addExpenseBtn">
+                        <i class="fas fa-plus"></i> Add Expense
+                    </button>
+                </div>
+
+                <p style="color: white; text-align: center; margin-bottom: 25px; opacity: 0.9;">
+                    Shared expenses (shuttlecock, net, etc.) that apply to all active members
+                </p>
+
+                <div class="expense-list" id="expenseList"></div>
+            </div>
+
+            <!-- Rules Page -->
+            <div class="page" id="rulesPage">
+                <h1 class="page-title">📖 Rules & Techniques</h1>
+                
+                <div class="language-switch">
+                    <button class="lang-btn active" data-lang="english">🇬🇧 English</button>
+                    <button class="lang-btn" data-lang="hindi">🇮🇳 हिंदी</button>
+                </div>
+
+                <div class="rules-grid" id="rulesContent"></div>
+            </div>
+
+        </main>
+
+        <!-- Inactivity Timer -->
+        <div class="inactivity-timer" id="inactivityTimer">
+            <i class="fas fa-clock"></i>
+            <span id="timerDisplay">10:00</span>
+        </div>
+
+        <!-- View Mode Banner -->
+        <div class="view-mode-banner">
+            👁️ VIEW ONLY MODE - You can only view data, not make changes
+        </div>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- Member Modal -->
+    <div class="modal-overlay" id="memberModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-plus"></i> <span id="memberModalTitle">Add Member</span></h2>
+                <button class="modal-close" onclick="closeModal('memberModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="memberForm">
+                    <input type="hidden" id="memberId">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="memberName" placeholder="Enter full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        <input type="tel" id="memberPhone" placeholder="Enter phone number" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="memberEmail" placeholder="Enter email (optional)">
+                    </div>
+                    <div class="form-group">
+                        <label>Join Date *</label>
+                        <input type="date" id="memberJoinDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="memberStatus">
+                            <option value="active">✅ Active</option>
+                            <option value="inactive">❌ Inactive</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('memberModal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="saveMemberBtn">Save Member</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Modal -->
+    <div class="modal-overlay" id="expenseModal">
+        <div class="modal">
+            <div class="modal-header" style="background: var(--gradient-warning);">
+                <h2><i class="fas fa-receipt"></i> Add Shared Expense</h2>
+                <button class="modal-close" onclick="closeModal('expenseModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="expenseForm">
+                    <div class="form-group">
+                        <label>Expense Name / Purpose *</label>
+                        <input type="text" id="expenseName" placeholder="e.g., Shuttlecock, Net, etc." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount per Member (₹) *</label>
+                        <input type="number" id="expenseAmount" placeholder="Enter amount" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Date *</label>
+                        <input type="date" id="expenseDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="expenseDescription" placeholder="Optional description">
+                    </div>
+                    <p style="font-size: 13px; color: #666; background: #fef3c7; padding: 12px; border-radius: 8px; margin-top: 10px;">
+                        ⚠️ This expense will be added as <strong>UNPAID</strong> for all active members.
+                    </p>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('expenseModal')">Cancel</button>
+                        <button type="submit" class="btn btn-warning" id="saveExpenseBtn">Add Expense</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mark Paid Modal -->
+    <div class="modal-overlay" id="markPaidModal">
+        <div class="modal">
+            <div class="modal-header" style="background: var(--gradient-success);">
+                <h2><i class="fas fa-check-circle"></i> Mark as Paid</h2>
+                <button class="modal-close" onclick="closeModal('markPaidModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="markPaidForm">
+                    <input type="hidden" id="paymentMemberId">
+                    <input type="hidden" id="paymentExpenseId">
+                    
+                    <div style="text-align: center; padding: 20px; background: var(--light); border-radius: 15px; margin-bottom: 20px;">
+                        <p style="font-size: 14px; color: #666; margin-bottom: 5px;">Amount</p>
+                        <p style="font-size: 36px; font-weight: 800; color: var(--success);" id="paymentAmountDisplay">₹0</p>
+                        <p style="font-size: 16px; color: var(--dark); font-weight: 600;" id="paymentPurposeDisplay"></p>
+                        <p style="font-size: 14px; color: var(--primary); margin-top: 5px;" id="paymentMemberDisplay"></p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Payment Method *</label>
+                        <select id="paymentMethod" required>
+                            <option value="">Select payment method</option>
+                            <option value="cash">💵 Cash</option>
+                            <option value="upi">📱 UPI (GPay/PhonePe/Paytm)</option>
+                            <option value="bank">🏦 Bank Transfer</option>
+                            <option value="card">💳 Card</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Date *</label>
+                        <input type="date" id="paymentDate" required>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('markPaidModal')">Cancel</button>
+                        <button type="submit" class="btn btn-success" id="confirmPaymentBtn">✅ Confirm Payment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header" style="background: var(--gradient-danger);">
+                <h2><i class="fas fa-exclamation-triangle"></i> Delete Confirmation</h2>
+                <button class="modal-close" onclick="closeModal('deleteModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="text-align: center; font-size: 16px; margin-bottom: 20px;" id="deleteMessage">
+                    Are you sure you want to delete this?
+                </p>
+                <form id="deleteForm">
+                    <input type="hidden" id="deleteType">
+                    <input type="hidden" id="deleteId">
+                    
+                    <div class="form-group" id="deletePasswordGroup" style="display: none;">
+                        <label>🔐 Enter Delete Password</label>
+                        <input type="password" id="deletePassword" placeholder="Enter password to delete">
+                        <p style="font-size: 12px; color: #666; margin-top: 5px;">Password required to delete payment records</p>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+                        <button type="submit" class="btn btn-danger" id="confirmDeleteBtn">🗑️ Delete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, doc, getDocs, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBRkV2K6QtqnNIez4B90Iac9eKYnLiE8z4",
+            authDomain: "badminton-45ca5.firebaseapp.com",
+            projectId: "badminton-45ca5",
+            storageBucket: "badminton-45ca5.firebasestorage.app",
+            messagingSenderId: "504991875630",
+            appId: "1:504991875630:web:4f6fbab244e6994ad915bf",
+            measurementId: "G-BM1DXBDL1D"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ==================== GLOBAL VARIABLES ====================
+        let members = [];
+        let expenses = [];
+        let payments = [];
+        let isAdmin = false;
+        let inactivityTimer;
+        let remainingTime = 600;
+
+        // Credentials
+        const ADMIN_USERNAME = 'badminton';
+        const ADMIN_PASSWORD = '@123badminton';
+        const DELETE_PASSWORD = 'deepak';
+
+        // ==================== FIREBASE CONNECTION ====================
+        async function initializeFirebase() {
+            try {
+                // Set up real-time listeners
+                setupRealtimeListeners();
+                
+                // Update status
+                updateFirebaseStatus(true);
+                
+                // Hide loading
+                setTimeout(() => {
+                    document.getElementById('loadingOverlay').classList.add('hidden');
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                updateFirebaseStatus(false);
+                showToast('Firebase connection failed! Using offline mode.', 'error');
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
+        }
+
+        function updateFirebaseStatus(connected) {
+            const statusEl = document.getElementById('firebaseStatus');
+            const statusText = document.getElementById('firebaseStatusText');
+            
+            if (connected) {
+                statusEl.className = 'firebase-status connected';
+                statusText.textContent = 'Firebase Connected';
+            } else {
+                statusEl.className = 'firebase-status disconnected';
+                statusText.textContent = 'Offline Mode';
+            }
+        }
+
+        function setupRealtimeListeners() {
+            // Members listener
+            onSnapshot(collection(db, 'members'), (snapshot) => {
+                members = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                refreshCurrentPage();
+            });
+
+            // Expenses listener
+            onSnapshot(collection(db, 'expenses'), (snapshot) => {
+                expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                refreshCurrentPage();
+            });
+
+            // Payments listener
+            onSnapshot(collection(db, 'payments'), (snapshot) => {
+                payments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                refreshCurrentPage();
+            });
+        }
+
+        function refreshCurrentPage() {
+            const activePage = document.querySelector('.page.active');
+            if (activePage) {
+                const pageId = activePage.id.replace('Page', '');
+                if (pageId === 'dashboard') loadDashboard();
+                if (pageId === 'members') loadMembers();
+                if (pageId === 'expenses') loadExpenses();
+            }
+        }
+
+        // ==================== FIREBASE CRUD OPERATIONS ====================
+        async function addMemberToFirebase(memberData) {
+            try {
+                const docRef = await addDoc(collection(db, 'members'), memberData);
+                return docRef.id;
+            } catch (error) {
+                console.error('Error adding member:', error);
+                throw error;
+            }
+        }
+
+        async function updateMemberInFirebase(id, memberData) {
+            try {
+                await updateDoc(doc(db, 'members', id), memberData);
+            } catch (error) {
+                console.error('Error updating member:', error);
+                throw error;
+            }
+        }
+
+        async function deleteMemberFromFirebase(id) {
+            try {
+                await deleteDoc(doc(db, 'members', id));
+                // Also delete related payments
+                const memberPayments = payments.filter(p => p.memberId === id);
+                for (const payment of memberPayments) {
+                    await deleteDoc(doc(db, 'payments', payment.id));
+                }
+            } catch (error) {
+                console.error('Error deleting member:', error);
+                throw error;
+            }
+        }
+
+        async function addExpenseToFirebase(expenseData) {
+            try {
+                const docRef = await addDoc(collection(db, 'expenses'), expenseData);
+                return docRef.id;
+            } catch (error) {
+                console.error('Error adding expense:', error);
+                throw error;
+            }
+        }
+
+        async function deleteExpenseFromFirebase(id) {
+            try {
+                await deleteDoc(doc(db, 'expenses', id));
+                // Also delete related payments
+                const expensePayments = payments.filter(p => p.expenseId === id);
+                for (const payment of expensePayments) {
+                    await deleteDoc(doc(db, 'payments', payment.id));
+                }
+            } catch (error) {
+                console.error('Error deleting expense:', error);
+                throw error;
+            }
+        }
+
+        async function addPaymentToFirebase(paymentData) {
+            try {
+                const docRef = await addDoc(collection(db, 'payments'), paymentData);
+                return docRef.id;
+            } catch (error) {
+                console.error('Error adding payment:', error);
+                throw error;
+            }
+        }
+
+        async function deletePaymentFromFirebase(id) {
+            try {
+                await deleteDoc(doc(db, 'payments', id));
+            } catch (error) {
+                console.error('Error deleting payment:', error);
+                throw error;
+            }
+        }
+
+        // ==================== LOGIN SYSTEM ====================
+        window.switchLoginTab = function(type) {
+            document.querySelectorAll('.login-tab').forEach((t, i) => {
+                t.classList.toggle('active', (type === 'admin' && i === 0) || (type === 'viewer' && i === 1));
+            });
+            
+            document.querySelector('.admin-form').classList.toggle('active', type === 'admin');
+            document.querySelector('.viewer-form').classList.toggle('active', type === 'viewer');
+            
+            document.getElementById('loginError').style.display = 'none';
+        };
+
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+
+            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+                loginSuccess(true);
+            } else {
+                showLoginError('Invalid credentials! 🔒');
+            }
+        });
+
+        window.loginAsViewer = function() {
+            loginSuccess(false);
+        };
+
+        function loginSuccess(admin) {
+            isAdmin = admin;
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'block';
+            
+            if (admin) {
+                document.body.classList.add('is-admin');
+                document.getElementById('roleBadge').innerHTML = '🔐 Admin';
+                document.getElementById('roleBadge').className = 'role-badge admin';
+                startInactivityTimer();
+            } else {
+                document.body.classList.remove('is-admin');
+                document.getElementById('roleBadge').innerHTML = '👁️ Viewer';
+                document.getElementById('roleBadge').className = 'role-badge viewer';
+            }
+            
+            loadDashboard();
+            showToast(`Welcome ${admin ? 'Admin' : 'Viewer'}! 🏸`, 'success');
+        }
+
+        function showLoginError(msg) {
+            const errEl = document.getElementById('loginError');
+            errEl.textContent = msg;
+            errEl.style.display = 'block';
+        }
+
+        // ==================== INACTIVITY TIMER ====================
+        function startInactivityTimer() {
+            if (!isAdmin) return;
+            
+            remainingTime = 600;
+            updateTimerDisplay();
+            
+            clearInterval(inactivityTimer);
+            inactivityTimer = setInterval(() => {
+                remainingTime--;
+                updateTimerDisplay();
+                
+                if (remainingTime <= 60) {
+                    document.getElementById('inactivityTimer').classList.add('warning');
+                } else {
+                    document.getElementById('inactivityTimer').classList.remove('warning');
+                }
+                
+                if (remainingTime <= 0) {
+                    logout();
+                    showToast('Logged out due to inactivity ⏰', 'error');
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function resetInactivityTimer() {
+            if (isAdmin) {
+                remainingTime = 600;
+                document.getElementById('inactivityTimer').classList.remove('warning');
+            }
+        }
+
+        ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'].forEach(event => {
+            document.addEventListener(event, resetInactivityTimer, true);
+        });
+
+        // ==================== LOGOUT ====================
+        function logout() {
+            isAdmin = false;
+            clearInterval(inactivityTimer);
+            document.body.classList.remove('is-admin');
+            document.getElementById('appContainer').style.display = 'none';
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('adminUsername').value = '';
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('loginError').style.display = 'none';
+            switchLoginTab('admin');
+            
+            // Reset to dashboard
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelector('.nav-item[data-page="dashboard"]').classList.add('active');
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('dashboardPage').classList.add('active');
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            logout();
+            showToast('Logged out successfully! 👋', 'success');
+        });
+
+        // ==================== NAVIGATION ====================
+        const navItems = document.querySelectorAll('.nav-item[data-page]');
+        const pages = document.querySelectorAll('.page');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const pageId = item.dataset.page;
+                
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+                
+                pages.forEach(page => page.classList.remove('active'));
+                document.getElementById(`${pageId}Page`).classList.add('active');
+                
+                document.getElementById('navMenu').classList.remove('active');
+                document.getElementById('hamburger').classList.remove('active');
+                
+                if (pageId === 'dashboard') loadDashboard();
+                if (pageId === 'members') loadMembers();
+                if (pageId === 'expenses') loadExpenses();
+                if (pageId === 'rules') loadRules('english');
+            });
+        });
+
+        document.getElementById('hamburger').addEventListener('click', function() {
+            this.classList.toggle('active');
+            document.getElementById('navMenu').classList.toggle('active');
+        });
+
+        // ==================== DASHBOARD ====================
+        function loadDashboard() {
+            const totalMembers = members.length;
+            const activeMembers = members.filter(m => m.status === 'active').length;
+            
+            let totalCollected = 0;
+            let totalPending = 0;
+            let cashTotal = 0;
+            let onlineTotal = 0;
+
+            payments.forEach(p => {
+                const amount = parseFloat(p.amount);
+                totalCollected += amount;
+                if (p.method === 'cash') cashTotal += amount;
+                else onlineTotal += amount;
+            });
+
+            // Calculate pending
+            expenses.forEach(exp => {
+                members.filter(m => m.status === 'active').forEach(member => {
+                    const paid = payments.find(p => p.memberId === member.id && p.expenseId === exp.id);
+                    if (!paid) {
+                        totalPending += parseFloat(exp.amount);
+                    }
+                });
+            });
+
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card purple">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <h3>Total Members</h3>
+                        <div class="stat-value">${totalMembers}</div>
+                    </div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-info">
+                        <h3>Total Collected</h3>
+                        <div class="stat-value">₹${totalCollected.toLocaleString()}</div>
+                    </div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-info">
+                        <h3>Total Pending</h3>
+                        <div class="stat-value">₹${totalPending.toLocaleString()}</div>
+                    </div>
+                </div>
+                <div class="stat-card blue">
+                    <div class="stat-icon">💵</div>
+                    <div class="stat-info">
+                        <h3>Cash</h3>
+                        <div class="stat-value">₹${cashTotal.toLocaleString()}</div>
+                    </div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon">📱</div>
+                    <div class="stat-info">
+                        <h3>Online</h3>
+                        <div class="stat-value">₹${onlineTotal.toLocaleString()}</div>
+                    </div>
+                </div>
+            `;
+
+            // Pending Collections
+            let pendingHTML = '';
+            let pendingCount = 0;
+            
+            expenses.forEach(exp => {
+                members.filter(m => m.status === 'active').forEach(member => {
+                    const paid = payments.find(p => p.memberId === member.id && p.expenseId === exp.id);
+                    if (!paid) {
+                        pendingCount++;
+                        if (pendingCount <= 8) {
+                            pendingHTML += `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #fef2f2; border-radius: 10px; margin-bottom: 8px; border-left: 4px solid var(--danger);">
+                                    <div>
+                                        <strong>${member.name}</strong>
+                                        <span style="color: #666; font-size: 13px;"> - ${exp.name}</span>
+                                    </div>
+                                    <span style="font-weight: 700; color: var(--danger);">₹${exp.amount}</span>
+                                </div>
+                            `;
+                        }
+                    }
+                });
+            });
+
+            if (pendingHTML) {
+                if (pendingCount > 8) {
+                    pendingHTML += `<p style="color: #666; text-align: center; margin-top: 10px;">+ ${pendingCount - 8} more pending...</p>`;
+                }
+            } else {
+                pendingHTML = '<p style="color: var(--success); text-align: center; padding: 20px;">🎉 All payments collected!</p>';
+            }
+            document.getElementById('pendingCollections').innerHTML = pendingHTML;
+
+            // Recent Activity
+            const recentPayments = [...payments].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+            let activityHTML = '';
+            
+            if (recentPayments.length > 0) {
+                recentPayments.forEach(p => {
+                    const member = members.find(m => m.id === p.memberId);
+                    const expense = expenses.find(e => e.id === p.expenseId);
+                    activityHTML += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f0fdf4; border-radius: 10px; margin-bottom: 8px; border-left: 4px solid var(--success);">
+                            <div>
+                                <strong>${member?.name || 'Unknown'}</strong>
+                                <span style="color: #666; font-size: 13px;"> paid for ${expense?.name || 'Unknown'}</span>
+                                <span style="color: var(--primary); font-size: 12px;"> via ${getMethodIcon(p.method)} ${p.method}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="font-weight: 700; color: var(--success);">₹${p.amount}</span>
+                                <div style="font-size: 11px; color: #666;">${p.date}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                activityHTML = '<p style="color: #666; text-align: center; padding: 20px;">No payments recorded yet. 📝</p>';
+            }
+            document.getElementById('recentActivity').innerHTML = activityHTML;
+        }
+
+        // ==================== MEMBERS ====================
+        function loadMembers(searchTerm = '') {
+            let filteredMembers = members;
+            
+            if (searchTerm) {
+                filteredMembers = members.filter(m => 
+                    m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    m.phone.includes(searchTerm)
+                );
+            }
+
+            if (filteredMembers.length === 0) {
+                document.getElementById('membersGrid').innerHTML = `
+                    <div class="empty-state card" style="grid-column: 1/-1;">
+                        <div class="icon">👥</div>
+                        <h3>No Members Found</h3>
+                        <p>${searchTerm ? 'Try a different search' : (isAdmin ? 'Add your first member!' : 'No members yet.')}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filteredMembers.forEach(member => {
+                const memberPayments = payments.filter(p => p.memberId === member.id);
+                const totalPaid = memberPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+                
+                const pendingExpenses = expenses.filter(exp => {
+                    const paid = payments.find(p => p.memberId === member.id && p.expenseId === exp.id);
+                    return !paid;
+                });
+                const totalPending = pendingExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+
+                html += `
+                    <div class="member-card">
+                        <div class="member-header">
+                            <div class="member-avatar">${member.name.charAt(0).toUpperCase()}</div>
+                            <div>
+                                <div class="member-name">${member.name}</div>
+                                <div class="member-phone">📱 ${member.phone}</div>
+                            </div>
+                            <span class="member-status ${member.status}">${member.status === 'active' ? '✅' : '❌'}</span>
+                        </div>
+                        <div class="member-body">
+                            <div class="member-stats">
+                                <div class="member-stat success">
+                                    <div class="value">₹${totalPaid.toLocaleString()}</div>
+                                    <div class="label">Paid</div>
+                                </div>
+                                <div class="member-stat danger">
+                                    <div class="value">₹${totalPending.toLocaleString()}</div>
+                                    <div class="label">Pending</div>
+                                </div>
+                                <div class="member-stat">
+                                    <div class="value">${memberPayments.length}</div>
+                                    <div class="label">Payments</div>
+                                </div>
+                            </div>
+
+                            ${pendingExpenses.length > 0 ? `
+                                <div class="pending-section">
+                                    <div class="pending-title">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        Pending Payments (${pendingExpenses.length})
+                                    </div>
+                                    <div class="pending-list">
+                                        ${pendingExpenses.map(exp => `
+                                            <div class="pending-item">
+                                                <div class="pending-item-info">
+                                                    <div class="name">${exp.name}</div>
+                                                    <div class="date">${exp.date}</div>
+                                                </div>
+                                                <div class="pending-item-amount">₹${exp.amount}</div>
+                                                ${isAdmin ? `
+                                                    <div class="pending-item-actions admin-only">
+                                                        <button class="btn btn-success btn-sm" onclick="window.openMarkPaidModal('${member.id}', '${member.name}', '${exp.id}', ${exp.amount}, '${exp.name}')">
+                                                            <i class="fas fa-check"></i> Pay
+                                                        </button>
+                                                    </div>
+                                                ` : ''}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : '<div class="all-clear">✅ All dues cleared!</div>'}
+
+                            ${memberPayments.length > 0 ? `
+                                <div class="payment-history-title" onclick="window.toggleHistory('${member.id}')">
+                                    <i class="fas fa-history"></i>
+                                    Payment History (${memberPayments.length})
+                                    <i class="fas fa-chevron-down" style="margin-left: auto;"></i>
+                                </div>
+                                <div class="payment-history" id="history-${member.id}">
+                                    <div class="history-list">
+                                        ${memberPayments.sort((a,b) => new Date(b.date) - new Date(a.date)).map(p => {
+                                            const exp = expenses.find(e => e.id === p.expenseId);
+                                            return `
+                                                <div class="history-item">
+                                                    <div class="history-item-info">
+                                                        <div class="name">${exp?.name || 'Unknown'}</div>
+                                                        <div class="date">${p.date}</div>
+                                                        <div class="method">${getMethodIcon(p.method)} ${p.method}</div>
+                                                    </div>
+                                                    <div class="history-item-amount">₹${p.amount}</div>
+                                                    ${isAdmin ? `
+                                                        <button class="btn btn-danger btn-sm admin-only" style="margin-left: 10px;" onclick="window.confirmDeletePayment('${p.id}')">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    ` : ''}
+                                                </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            ${isAdmin ? `
+                                <div class="member-actions admin-only" style="display: flex;">
+                                    <button class="btn btn-secondary btn-sm" onclick="window.editMember('${member.id}')">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="window.confirmDeleteMember('${member.id}')">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('membersGrid').innerHTML = html;
+        }
+
+        function getMethodIcon(method) {
+            const icons = { 'cash': '💵', 'upi': '📱', 'bank': '🏦', 'card': '💳' };
+            return icons[method] || '💰';
+        }
+
+        window.toggleHistory = function(memberId) {
+            const historyEl = document.getElementById(`history-${memberId}`);
+            if (historyEl) historyEl.classList.toggle('show');
+        };
+
+        document.getElementById('memberSearch').addEventListener('input', (e) => {
+            loadMembers(e.target.value);
+        });
+
+        // Add Member Button
+        document.getElementById('addMemberBtn').addEventListener('click', () => {
+            if (!isAdmin) {
+                showToast('Only Admin can add members! 🔒', 'error');
+                return;
+            }
+            document.getElementById('memberModalTitle').textContent = 'Add Member';
+            document.getElementById('memberForm').reset();
+            document.getElementById('memberId').value = '';
+            document.getElementById('memberJoinDate').value = new Date().toISOString().split('T')[0];
+            openModal('memberModal');
+        });
+
+        // Member Form Submit
+        document.getElementById('memberForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!isAdmin) {
+                showToast('Only Admin can save members! 🔒', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('saveMemberBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            
+            try {
+                const id = document.getElementById('memberId').value;
+                const memberData = {
+                    name: document.getElementById('memberName').value,
+                    phone: document.getElementById('memberPhone').value,
+                    email: document.getElementById('memberEmail').value,
+                    joinDate: document.getElementById('memberJoinDate').value,
+                    status: document.getElementById('memberStatus').value,
+                    updatedAt: new Date().toISOString()
+                };
+
+                if (id) {
+                    await updateMemberInFirebase(id, memberData);
+                    showToast('Member updated! ✅', 'success');
+                } else {
+                    memberData.createdAt = new Date().toISOString();
+                    await addMemberToFirebase(memberData);
+                    showToast('Member added! 🎉', 'success');
+                }
+
+                closeModal('memberModal');
+            } catch (error) {
+                showToast('Error saving member! ❌', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Save Member';
+            }
+        });
+
+        window.editMember = function(id) {
+            if (!isAdmin) {
+                showToast('Only Admin can edit members! 🔒', 'error');
+                return;
+            }
+            const member = members.find(m => m.id === id);
+            if (member) {
+                document.getElementById('memberModalTitle').textContent = 'Edit Member';
+                document.getElementById('memberId').value = member.id;
+                document.getElementById('memberName').value = member.name;
+                document.getElementById('memberPhone').value = member.phone;
+                document.getElementById('memberEmail').value = member.email || '';
+                document.getElementById('memberJoinDate').value = member.joinDate;
+                document.getElementById('memberStatus').value = member.status;
+                openModal('memberModal');
+            }
+        };
+
+        window.confirmDeleteMember = function(id) {
+            if (!isAdmin) {
+                showToast('Only Admin can delete members! 🔒', 'error');
+                return;
+            }
+            const member = members.find(m => m.id === id);
+            document.getElementById('deleteMessage').innerHTML = `
+                Are you sure you want to delete <strong>${member?.name}</strong>?<br>
+                <small style="color: #666;">This will also delete all payment history.</small>
+            `;
+            document.getElementById('deleteType').value = 'member';
+            document.getElementById('deleteId').value = id;
+            document.getElementById('deletePasswordGroup').style.display = 'none';
+            openModal('deleteModal');
+        };
+
+        // ==================== EXPENSES ====================
+        function loadExpenses() {
+            if (expenses.length === 0) {
+                document.getElementById('expenseList').innerHTML = `
+                    <div class="empty-state card">
+                        <div class="icon">💸</div>
+                        <h3>No Shared Expenses</h3>
+                        <p>${isAdmin ? 'Add shared expenses like shuttlecock, net, etc.' : 'No expenses added yet.'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            expenses.forEach(exp => {
+                const activeMembers = members.filter(m => m.status === 'active');
+                let paidCount = 0;
+                let paidAmount = 0;
+
+                activeMembers.forEach(member => {
+                    const paid = payments.find(p => p.memberId === member.id && p.expenseId === exp.id);
+                    if (paid) {
+                        paidCount++;
+                        paidAmount += parseFloat(exp.amount);
+                    }
+                });
+
+                const unpaidCount = activeMembers.length - paidCount;
+                const unpaidAmount = unpaidCount * parseFloat(exp.amount);
+                const totalExpected = activeMembers.length * parseFloat(exp.amount);
+
+                html += `
+                    <div class="expense-card">
+                        <div class="expense-info">
+                            <h3>${exp.name}</h3>
+                            <p>📅 ${exp.date} ${exp.description ? '• ' + exp.description : ''}</p>
+                        </div>
+                        <div class="expense-amount">₹${exp.amount}/person</div>
+                        <div class="expense-stats">
+                            <div class="expense-stat paid">
+                                <div class="number">${paidCount}</div>
+                                <div class="label">Paid (₹${paidAmount})</div>
+                            </div>
+                            <div class="expense-stat unpaid">
+                                <div class="number">${unpaidCount}</div>
+                                <div class="label">Unpaid (₹${unpaidAmount})</div>
+                            </div>
+                            <div class="expense-stat">
+                                <div class="number">₹${totalExpected}</div>
+                                <div class="label">Expected</div>
+                            </div>
+                        </div>
+                        ${isAdmin ? `
+                            <button class="btn btn-danger btn-sm admin-only" onclick="window.confirmDeleteExpense('${exp.id}')" style="margin-top: 15px;">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            document.getElementById('expenseList').innerHTML = html;
+        }
+
+        document.getElementById('addExpenseBtn').addEventListener('click', () => {
+            if (!isAdmin) {
+                showToast('Only Admin can add expenses! 🔒', 'error');
+                return;
+            }
+            document.getElementById('expenseForm').reset();
+            document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
+            openModal('expenseModal');
+        });
+
+        document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!isAdmin) {
+                showToast('Only Admin can add expenses! 🔒', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('saveExpenseBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+
+            try {
+                const expenseData = {
+                    name: document.getElementById('expenseName').value,
+                    amount: document.getElementById('expenseAmount').value,
+                    date: document.getElementById('expenseDate').value,
+                    description: document.getElementById('expenseDescription').value,
+                    createdAt: new Date().toISOString()
+                };
+
+                await addExpenseToFirebase(expenseData);
+                closeModal('expenseModal');
+                
+                const activeCount = members.filter(m => m.status === 'active').length;
+                showToast(`Expense added for ${activeCount} members! 💸`, 'warning');
+            } catch (error) {
+                showToast('Error adding expense! ❌', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Add Expense';
+            }
+        });
+
+        window.confirmDeleteExpense = function(id) {
+            if (!isAdmin) {
+                showToast('Only Admin can delete expenses! 🔒', 'error');
+                return;
+            }
+            const expense = expenses.find(e => e.id === id);
+            document.getElementById('deleteMessage').innerHTML = `
+                Delete expense <strong>${expense?.name}</strong>?<br>
+                <small style="color: #666;">Related payments will also be deleted.</small>
+            `;
+            document.getElementById('deleteType').value = 'expense';
+            document.getElementById('deleteId').value = id;
+            document.getElementById('deletePasswordGroup').style.display = 'none';
+            openModal('deleteModal');
+        };
+
+        // ==================== PAYMENTS ====================
+        window.openMarkPaidModal = function(memberId, memberName, expenseId, amount, purpose) {
+            if (!isAdmin) {
+                showToast('Only Admin can mark payments! 🔒', 'error');
+                return;
+            }
+            document.getElementById('paymentMemberId').value = memberId;
+            document.getElementById('paymentExpenseId').value = expenseId;
+            document.getElementById('paymentAmountDisplay').textContent = `₹${amount}`;
+            document.getElementById('paymentPurposeDisplay').textContent = purpose;
+            document.getElementById('paymentMemberDisplay').textContent = `For: ${memberName}`;
+            document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('paymentMethod').value = '';
+            openModal('markPaidModal');
+        };
+
+        document.getElementById('markPaidForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!isAdmin) {
+                showToast('Only Admin can mark payments! 🔒', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('confirmPaymentBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+            try {
+                const memberId = document.getElementById('paymentMemberId').value;
+                const expenseId = document.getElementById('paymentExpenseId').value;
+                const expense = expenses.find(exp => exp.id === expenseId);
+                const member = members.find(m => m.id === memberId);
+
+                const paymentData = {
+                    memberId: memberId,
+                    expenseId: expenseId,
+                    amount: expense.amount,
+                    method: document.getElementById('paymentMethod').value,
+                    date: document.getElementById('paymentDate').value,
+                    createdAt: new Date().toISOString()
+                };
+
+                await addPaymentToFirebase(paymentData);
+                closeModal('markPaidModal');
+                showToast(`Payment of ₹${expense.amount} recorded for ${member?.name}! ✅`, 'success');
+            } catch (error) {
+                showToast('Error recording payment! ❌', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '✅ Confirm Payment';
+            }
+        });
+
+        window.confirmDeletePayment = function(paymentId) {
+            if (!isAdmin) {
+                showToast('Only Admin can delete payments! 🔒', 'error');
+                return;
+            }
+            document.getElementById('deleteMessage').innerHTML = `
+                Delete this payment record?<br>
+                <small style="color: var(--danger);">⚠️ Password required.</small>
+            `;
+            document.getElementById('deleteType').value = 'payment';
+            document.getElementById('deleteId').value = paymentId;
+            document.getElementById('deletePasswordGroup').style.display = 'block';
+            document.getElementById('deletePassword').value = '';
+            openModal('deleteModal');
+        };
+
+        // ==================== DELETE HANDLER ====================
+        document.getElementById('deleteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!isAdmin) {
+                showToast('Only Admin can delete! 🔒', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('confirmDeleteBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+            try {
+                const type = document.getElementById('deleteType').value;
+                const id = document.getElementById('deleteId').value;
+
+                if (type === 'payment') {
+                    const password = document.getElementById('deletePassword').value;
+                    if (password !== DELETE_PASSWORD) {
+                        showToast('Wrong password! ❌', 'error');
+                        btn.disabled = false;
+                        btn.innerHTML = '🗑️ Delete';
+                        return;
+                    }
+                    await deletePaymentFromFirebase(id);
+                    showToast('Payment deleted! 🗑️', 'success');
+                } else if (type === 'member') {
+                    await deleteMemberFromFirebase(id);
+                    showToast('Member deleted! 🗑️', 'success');
+                } else if (type === 'expense') {
+                    await deleteExpenseFromFirebase(id);
+                    showToast('Expense deleted! 🗑️', 'success');
+                }
+
+                closeModal('deleteModal');
+            } catch (error) {
+                showToast('Error deleting! ❌', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🗑️ Delete';
+            }
+        });
+
+        // ==================== RULES ====================
+        const rulesData = {
+            english: [
+                {
+                    title: "League Rules",
+                    icon: "🏆",
+                    items: [
+                        "All members must register before playing",
+                        "Monthly membership fee as decided by committee",
+                        "Court booking must be done in advance",
+                        "Maximum 2 hours per session per member",
+                        "Proper sports attire and non-marking shoes mandatory",
+                        "Members must contribute to shared expenses",
+                        "Respect all players and maintain sportsmanship",
+                        "No abusive language or behavior allowed",
+                        "Equipment damage must be reported immediately",
+                        "Follow all safety guidelines strictly"
+                    ]
+                },
+                {
+                    title: "Badminton Techniques",
+                    icon: "🏸",
+                    items: [
+                        "Grip: Hold racket firmly but relaxed (like handshake)",
+                        "Ready Position: Feet shoulder-width, knees bent, racket up",
+                        "Footwork: Stay on toes, move quickly in all directions",
+                        "Serve: Hit below waist, racket head below wrist",
+                        "Clear: High deep shot to opponent's backcourt",
+                        "Drop Shot: Soft shot just over the net",
+                        "Smash: Powerful downward attacking shot",
+                        "Net Shot: Delicate shot close to the net",
+                        "Drive: Fast flat shot across the court",
+                        "Lob: Defensive high shot from near the net"
+                    ]
+                },
+                {
+                    title: "Training Tips",
+                    icon: "💪",
+                    items: [
+                        "Warm up 10-15 minutes before every session",
+                        "Practice basic strokes against a wall",
+                        "Work on footwork drills daily",
+                        "Strengthen wrist and forearm muscles",
+                        "Build stamina with running and skipping",
+                        "Watch professional matches to learn",
+                        "Practice with different partners",
+                        "Focus on consistency before power",
+                        "Work on your weakest shots",
+                        "Cool down and stretch after playing"
+                    ]
+                },
+                {
+                    title: "Court Etiquette",
+                    icon: "🤝",
+                    items: [
+                        "Arrive on time for your booking",
+                        "Shake hands before and after match",
+                        "Call your own faults honestly",
+                        "Return shuttles to server promptly",
+                        "Don't walk behind courts during rallies",
+                        "Keep noise to minimum during play",
+                        "Clean up after yourself",
+                        "Help new players learn",
+                        "Encourage teammates and opponents",
+                        "Accept decisions gracefully"
+                    ]
+                }
+            ],
+            hindi: [
+                {
+                    title: "लीग के नियम",
+                    icon: "🏆",
+                    items: [
+                        "खेलने से पहले सभी सदस्यों को पंजीकरण करना होगा",
+                        "मासिक सदस्यता शुल्क समिति द्वारा तय किया जाएगा",
+                        "कोर्ट बुकिंग पहले से करनी होगी",
+                        "प्रति सत्र प्रति सदस्य अधिकतम 2 घंटे",
+                        "उचित खेल पोशाक और नॉन-मार्किंग जूते अनिवार्य",
+                        "सदस्यों को साझा खर्चों में योगदान देना होगा",
+                        "सभी खिलाड़ियों का सम्मान करें",
+                        "अभद्र भाषा या व्यवहार की अनुमति नहीं",
+                        "उपकरण क्षति की तुरंत रिपोर्ट करें",
+                        "सभी सुरक्षा दिशानिर्देशों का सख्ती से पालन करें"
+                    ]
+                },
+                {
+                    title: "बैडमिंटन तकनीक",
+                    icon: "🏸",
+                    items: [
+                        "पकड़: रैकेट मजबूती से पर आराम से पकड़ें",
+                        "तैयार स्थिति: पैर कंधे की चौड़ाई में, घुटने मुड़े, रैकेट ऊपर",
+                        "फुटवर्क: पैर की उंगलियों पर रहें, सभी दिशाओं में तेजी से चलें",
+                        "सर्व: कमर के नीचे मारें, रैकेट का सिर कलाई के नीचे",
+                        "क्लियर: विरोधी के बैककोर्ट तक ऊंचा गहरा शॉट",
+                        "ड्रॉप शॉट: नेट के ठीक ऊपर नरम शॉट",
+                        "स्मैश: शक्तिशाली नीचे की ओर हमलावर शॉट",
+                        "नेट शॉट: नेट के पास नाजुक शॉट",
+                        "ड्राइव: कोर्ट के आर-पार तेज सपाट शॉट",
+                        "लॉब: नेट के पास से रक्षात्मक ऊंचा शॉट"
+                    ]
+                },
+                {
+                    title: "प्रशिक्षण टिप्स",
+                    icon: "💪",
+                    items: [
+                        "हर सत्र से पहले 10-15 मिनट वार्मअप करें",
+                        "दीवार के सामने बुनियादी स्ट्रोक का अभ्यास करें",
+                        "रोजाना फुटवर्क ड्रिल पर काम करें",
+                        "कलाई और अग्रबाहु की मांसपेशियों को मजबूत करें",
+                        "दौड़ने और रस्सी कूदने से स्टैमिना बनाएं",
+                        "सीखने के लिए पेशेवर मैच देखें",
+                        "विभिन्न साथियों के साथ अभ्यास करें",
+                        "शक्ति से पहले स्थिरता पर ध्यान दें",
+                        "अपने कमजोर शॉट्स पर काम करें",
+                        "खेलने के बाद कूल डाउन और स्ट्रेच करें"
+                    ]
+                },
+                {
+                    title: "कोर्ट शिष्टाचार",
+                    icon: "🤝",
+                    items: [
+                        "अपनी बुकिंग के लिए समय पर पहुंचें",
+                        "मैच से पहले और बाद में हाथ मिलाएं",
+                        "अपनी गलतियां ईमानदारी से स्वीकार करें",
+                        "शटल जल्दी से सर्वर को लौटाएं",
+                        "रैलियों के दौरान कोर्ट के पीछे न चलें",
+                        "खेल के दौरान शोर कम से कम रखें",
+                        "अपने बाद सफाई करें",
+                        "नए खिलाड़ियों को सीखने में मदद करें",
+                        "साथियों और विरोधियों को प्रोत्साहित करें",
+                        "निर्णयों को शालीनता से स्वीकार करें"
+                    ]
+                }
+            ]
+        };
+
+        function loadRules(lang) {
+            const rules = rulesData[lang];
+            let html = '';
+
+            rules.forEach(section => {
+                html += `
+                    <div class="rule-card">
+                        <div class="rule-card-header">
+                            <span class="icon">${section.icon}</span>
+                            <h3>${section.title}</h3>
+                        </div>
+                        <div class="rule-card-body">
+                            <ul class="rule-list">
+                                ${section.items.map(item => `<li><span>🏸</span> ${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('rulesContent').innerHTML = html;
+        }
+
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                loadRules(btn.dataset.lang);
+            });
+        });
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        window.closeModal = function(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        };
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Close modal on outside click
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.remove('show');
+            });
+        });
+
+        // Initialize
+        loadRules('english');
+        initializeFirebase();
+    </script>
+</body>
+</html>
